@@ -13,7 +13,7 @@ function App() {
     <div className="App">
       <Song cs={cs} />
       <Player setisplaying={setisplaying} isplaying={isplaying} cs={cs} />
-      <Library songs={songs} />
+      <Library songs={songs} setcs={setcs} />
     </div>
   );
 }
