@@ -1,4 +1,5 @@
 import React from "react";
+import { playaudio } from "../util";
 
 const LibrarySong = ({ audioRef, song, songs, setcs, isplaying, setSongs }) => {
   const songSelectHandler = () => {
@@ -18,15 +19,7 @@ const LibrarySong = ({ audioRef, song, songs, setcs, isplaying, setSongs }) => {
       }
     });
     setSongs(newSongs);
-    audioRef.current.play();
-    if (isplaying) {
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.then((audio) => {
-          audioRef.current.play();
-        });
-      }
-    }
+    playaudio(isplaying, audioRef);
   };
   return (
     <div
