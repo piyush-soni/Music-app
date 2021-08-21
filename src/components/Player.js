@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faPlay,
@@ -6,7 +6,6 @@ import {
   faAngleRight,
   faPause,
 } from "@fortawesome/free-solid-svg-icons";
-import { playaudio } from "../util";
 
 const Player = ({
   songinfo,
@@ -19,9 +18,9 @@ const Player = ({
   setcs,
   setSongs,
 }) => {
-  useEffect(() => {
+  const activelibraryhandler = (nextprev) => {
     const newSongs = songs.map((song) => {
-      if (song.id === cs.id) {
+      if (song.id === nextprev.id) {
         return {
           ...song,
           active: true,
@@ -34,7 +33,7 @@ const Player = ({
       }
     });
     setSongs(newSongs);
-  }, [cs]);
+  };
   const playSongHandler = () => {
     if (isplaying) {
       audioRef.current.pause();
@@ -53,33 +52,47 @@ const Player = ({
     audioRef.current.currentTime = e.target.value;
     setsonginfo({ ...songinfo, currentTime: e.target.value });
   };
-  const skiptrackhandler = (direction) => {
+  const skiptrackhandler = async (direction) => {
     let currentindex = songs.findIndex((song) => song.id === cs.id);
     if (direction === "skip-forward") {
-      setcs(songs[(currentindex + 1) % songs.length]);
+      await setcs(songs[(currentindex + 1) % songs.length]);
+      activelibraryhandler(songs[(currentindex + 1) % songs.length]);
     }
     if (direction === "skip-back") {
       if ((currentindex - 1) % songs.length === -1) {
-        setcs(songs[songs.length - 1]);
-        playaudio(isplaying, audioRef);
+        await setcs(songs[songs.length - 1]);
+        activelibraryhandler(songs[songs.length - 1]);
+        if (isplaying) audioRef.current.play();
         return;
       }
-      setcs(songs[(currentindex - 1) % songs.length]);
+      await setcs(songs[(currentindex - 1) % songs.length]);
+      activelibraryhandler(songs[(currentindex - 1) % songs.length]);
     }
-    playaudio(isplaying, audioRef);
+    if (isplaying) audioRef.current.play();
+  };
+  const trackanim = {
+    transform: `translateX(${songinfo.anip}%)`,
   };
 
   return (
     <div className="player">
       <div className="time-control">
         <p> {getTime(songinfo.currentTime)} </p>
-        <input
-          onChange={draghandler}
-          min={0}
-          max={songinfo.duration || 0}
-          value={songinfo.currentTime}
-          type="range"
-        />
+        <div
+          style={{
+            background: `linear-gradient(to right, ${cs.color[0]}, ${cs.color[1]})`,
+          }}
+          className="track"
+        >
+          <input
+            onChange={draghandler}
+            min={0}
+            max={songinfo.duration || 0}
+            value={songinfo.currentTime}
+            type="range"
+          />
+          <div style={trackanim} className="animate-track"></div>
+        </div>
         <p> {songinfo.duration ? getTime(songinfo.duration) : "0:00"} </p>
       </div>
       <div className="play-control">
